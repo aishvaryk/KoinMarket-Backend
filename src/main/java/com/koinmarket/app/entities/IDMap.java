@@ -28,9 +28,11 @@ public class IDMap {
     private int rank;
 
     @Getter @Setter
+    @Column(name = "display_tv")
     private int displayTV;
 
     @Getter @Setter
+    @Column (name="manual_set_tv")
     private int manualSetTV;
 
     @Getter @Setter

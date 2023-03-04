@@ -5,8 +5,10 @@ import com.koinmarket.app.AppAPIConfiguration;
 import com.koinmarket.app.entities.IDMap;
 import com.koinmarket.app.repositories.IDMapRepository;
 import jakarta.transaction.Transactional;
-import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -17,10 +19,11 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
-public class CoinMarketCapIDMap {
+public class IDMapService {
 
     @Autowired
     private IDMapRepository repository;
@@ -36,7 +39,6 @@ public class CoinMarketCapIDMap {
         HttpEntity<String> httpEntity = new HttpEntity<>(headers);
         ResponseEntity<Map> IDMap = restTemplate.exchange(url, HttpMethod.GET,  httpEntity, Map.class);
         fillDb(IDMap);
-//        System.out.println("@@@@@@@@@@@@@@@@@@@@@@"+ repository.findAll());
     }
 
     @Transactional
@@ -49,4 +51,8 @@ public class CoinMarketCapIDMap {
         }
     }
 
+    public List<IDMap> getListOfCoins(int pageNo, int count, String orderBy, String direction) {
+        if (direction.equals("desc")) return repository.findAll(PageRequest.of(pageNo-1, count, Sort.by(Sort.Direction.DESC, orderBy))).getContent();
+        return repository.findAll(PageRequest.of(pageNo-1, count, Sort.by(Sort.Direction.ASC, orderBy))).getContent();
+    }
 }
