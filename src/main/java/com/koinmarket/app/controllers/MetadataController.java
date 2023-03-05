@@ -6,14 +6,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/metadata")
 public class MetadataController {
     @Autowired
     private MetadataService metadataService;
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Metadata> getMetadataById(@PathVariable(value = "id") int id) {
-        return metadataService.getMetadataById(id);
+    @GetMapping
+    public ResponseEntity<List<Metadata>> getMetadataById(@RequestParam() List<Integer> ids) {
+        return metadataService.getMetadataById(ids);
     }
 }

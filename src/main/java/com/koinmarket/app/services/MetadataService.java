@@ -11,9 +11,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Optional;
+
+import java.util.*;
 
 @Service
 public class MetadataService {
@@ -23,39 +22,50 @@ public class MetadataService {
     @Autowired
     private AppAPIConfiguration config;
 
-    public ResponseEntity<Metadata> getMetadataById(int id) {
-        Optional<Metadata> metadata= metadataRepository.findById(id);
-        if (metadata.isPresent()) {
-            return ResponseEntity.ok().body(metadata.get());
-        }
-        else {
-            getFromAPI(id);
-            return ResponseEntity.ok().body(metadata.get());
-        }
+    public ResponseEntity<List<Metadata>> getMetadataById(List<Integer> ids) {
+
+        List<Integer> idParameter = new ArrayList<>();
+         for (Integer id : ids) {
+             if (!metadataRepository.existsById(id)) {
+                 idParameter.add(id);
+             }
+         }
+        if (!idParameter.isEmpty()) getFromAPI(idParameter);
+        List<Metadata> metadata= metadataRepository.findAllById(ids);
+        return ResponseEntity.ok().body(metadata);
     }
 
     @Transactional
-    public void fillDb(ResponseEntity<Map> metadataResponse, int id) {
-        System.out.println("@@@@@@@ " + metadataResponse);
+    public void fillDb(ResponseEntity<Map> metadataResponse, List<Integer> ids) {
+
         LinkedHashMap responseData = (LinkedHashMap) metadataResponse.getBody().get("data");
-        LinkedHashMap metadataData = (LinkedHashMap) responseData.get(Integer.toString(id));
-        String name = (String) metadataData.get("name");
-        String symbol = (String) metadataData.get("symbol");
-        String category = (String) metadataData.get("category");
-        String slug = (String) metadataData.get("slug");
-        String description  = (String) metadataData.get("description");
-        String logoURL = (String) metadataData.get("logo");
-        Metadata metadata = new Metadata(id, name, symbol, category, slug, description, logoURL);
-        metadataRepository.save(metadata);
+
+        ids.forEach(id -> {
+            LinkedHashMap metadataData = (LinkedHashMap) responseData.get(Integer.toString(id));
+
+            String name = (String) metadataData.get("name");
+            String symbol = (String) metadataData.get("symbol");
+            String category = (String) metadataData.get("category");
+            String slug = (String) metadataData.get("slug");
+            String description = (String) metadataData.get("description");
+            String logoURL = (String) metadataData.get("logo");
+
+            Metadata metadata = new Metadata(id, name, symbol, category, slug, description, logoURL);
+
+            metadataRepository.save(metadata);
+        });
     }
 
-    public void getFromAPI(int id) {
-        String url = config.getUrl() + "/v2/cryptocurrency/info?id=" + id;
+    public void getFromAPI(List<Integer> ids) {
+
+        String url = config.getUrl() + "/v2/cryptocurrency/info?id=" + ids.toString();
         HttpHeaders headers = new HttpHeaders();
         headers.set("X-CMC_PRO_API_KEY", config.getKey());
+
         RestTemplate restTemplate = new RestTemplate();
         HttpEntity<String> httpEntity = new HttpEntity<>(headers);
+
         ResponseEntity<Map> metaDataResponse = restTemplate.exchange(url, HttpMethod.GET,  httpEntity, Map.class);
-        fillDb(metaDataResponse, id);
+        fillDb(metaDataResponse, ids);
     }
 }
