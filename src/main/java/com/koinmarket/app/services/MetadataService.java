@@ -57,8 +57,13 @@ public class MetadataService {
     }
 
     public void getFromAPI(List<Integer> ids) {
+        String idsAsString  = "";
+        for (Integer id: ids) {
+            if (idsAsString.isBlank()) idsAsString += id.toString();
+            else idsAsString += "," + id.toString();
+        }
 
-        String url = config.getUrl() + "/v2/cryptocurrency/info?id=" + ids.toString();
+        String url = config.getUrl() + "/v2/cryptocurrency/info?id=" + idsAsString;
         HttpHeaders headers = new HttpHeaders();
         headers.set("X-CMC_PRO_API_KEY", config.getKey());
 
