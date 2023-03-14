@@ -1,7 +1,9 @@
 package com.koinmarket.app.services;
 
 import com.koinmarket.app.AppAPIConfiguration;
+import com.koinmarket.app.entities.LatestListings;
 import com.koinmarket.app.entities.Metadata;
+import com.koinmarket.app.repositories.LatestListingRepository;
 import com.koinmarket.app.repositories.MetadataRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,10 @@ public class MetadataService {
 
     @Autowired
     private MetadataRepository metadataRepository;
+
+    @Autowired
+    private LatestListingRepository latestListingRepository;
+
     @Autowired
     private AppAPIConfiguration config;
 
@@ -43,16 +49,25 @@ public class MetadataService {
         ids.forEach(id -> {
             LinkedHashMap metadataData = (LinkedHashMap) responseData.get(Integer.toString(id));
 
-            String name = (String) metadataData.get("name");
-            String symbol = (String) metadataData.get("symbol");
-            String category = (String) metadataData.get("category");
-            String slug = (String) metadataData.get("slug");
-            String description = (String) metadataData.get("description");
-            String logoURL = (String) metadataData.get("logo");
+            Metadata metadata = new Metadata();
+            metadata.setId(id);
+            metadata.setCategory((String) metadataData.get("category"));
+            metadata.setDescription((String) metadataData.get("description"));
+            metadata.setLogoURL((String) metadataData.get("logo"));
+            LinkedHashMap urls = (LinkedHashMap)  metadataData.get("urls");
+            ArrayList<String> websiteResponse = (ArrayList<String>) urls.get("website");
+            metadata.setWebsite(websiteResponse.isEmpty() ? null : websiteResponse.get(0));
+            ArrayList<String> twitterResponse = (ArrayList<String>) urls.get("twitter");
+            metadata.setTwitter(twitterResponse.isEmpty() ? null : twitterResponse.get(0));
+            ArrayList<String> redditResponse = (ArrayList<String>) urls.get("reddit");
+            metadata.setReddit(redditResponse.isEmpty() ? null : redditResponse.get(0));
+            LatestListings latestListings = latestListingRepository.findById(id).orElse(null);
+            if (latestListings!=null) {
+                metadata.setLatestListings(latestListings);
+                latestListings.setMetadata(metadata);
+                latestListingRepository.save(latestListings);
+            }
 
-            Metadata metadata = new Metadata(id, name, symbol, category, slug, description, logoURL);
-
-            metadataRepository.save(metadata);
         });
     }
 

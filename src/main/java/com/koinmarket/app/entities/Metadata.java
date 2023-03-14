@@ -1,48 +1,41 @@
 package com.koinmarket.app.entities;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+@Getter @Setter
 @Entity
 @Table(name = "Metadata")
 public class Metadata {
 
-    @Getter @Setter
+
     @Id
-    private int id;
-    @Getter @Setter
-    private String name;
+    @Column(name = "latest_listing_id")
+    private Integer id;
 
-    @Getter @Setter
-    private String symbol;
-
-    @Getter @Setter
     private String category;
 
-    @Getter @Setter
-    private String slug;
-
-    @Getter @Setter
-    @Column(length = 1024)
+    @Column(length = 1024, nullable = true)
     private String description;
 
-    @Getter @Setter
     @Column(name="logo_URL")
     private String logoURL;
 
-    public Metadata() {};
+    private String website;
 
-    public Metadata(int id, String name, String symbol, String category, String slug, String description, String logoURL) {
-        this.id = id;
-        this.name = name;
-        this.symbol = symbol;
-        this.category =category;
-        this.slug = slug;
-        this.description = description;
-        this.logoURL = logoURL;
+    private String reddit;
+
+    private String twitter;
+
+    @OneToOne
+    @JoinColumn(name = "latest_listing_id")
+    @MapsId
+    @JsonBackReference
+    private LatestListings latestListings;
+
+    public Metadata() {
+        super();
     }
 }

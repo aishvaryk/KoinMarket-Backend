@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -40,7 +41,7 @@ public class LatestQuotesService {
     }
 
     @Transactional
-    public void fillDb(ResponseEntity<Map> latestQuotesResponse, List<Integer> ids) {
+    private void readQuotesResponse(ResponseEntity<Map> latestQuotesResponse, List<Integer> ids) {
 
         LinkedHashMap responseData = (LinkedHashMap) latestQuotesResponse.getBody().get("data");
 
@@ -48,27 +49,33 @@ public class LatestQuotesService {
             LinkedHashMap responseDataPerID = (LinkedHashMap) responseData.get(Integer.toString(id));
             LinkedHashMap quotesDataPerCurrency = (LinkedHashMap) responseDataPerID.get("quote");
             LinkedHashMap quotesData= (LinkedHashMap) quotesDataPerCurrency.get("USD");
-
-            Double price = ((Number) quotesData.get("price")).doubleValue();
-            Double volume24H = ((Number) quotesData.get("volume_24h")).doubleValue();
-            Double percentageChange1H = ((Number) quotesData.get("percent_change_1h")).doubleValue();
-            Double percentageChange24H = ((Number) quotesData.get("percent_change_24h")).doubleValue();
-            Double percentageChange7D = ((Number) quotesData.get("percent_change_7d")).doubleValue();
-            Double percentageChange30D = ((Number) quotesData.get("percent_change_30d")).doubleValue();
-            Double percentageChange60D = ((Number) quotesData.get("percent_change_60d")).doubleValue();
-            Double percentageChange90D = ((Number) quotesData.get("percent_change_90d")).doubleValue();
-            Double marketCap = ((Number) quotesData.get("market_cap")).doubleValue();
-            Double marketCapDominance = ((Number) quotesData.get("market_cap_dominance")).doubleValue();
-            Double fullyDilutedMarketCap = ((Number) quotesData.get("fully_diluted_market_cap")).doubleValue();
-            String lastUpdated = (String) quotesData.get("last_updated");
-
-            LatestQuotesUSD latestQuotesUSD = new LatestQuotesUSD(id, price, volume24H, percentageChange1H, percentageChange24H, percentageChange7D, percentageChange30D, percentageChange60D, percentageChange90D, marketCap, marketCapDominance, fullyDilutedMarketCap, lastUpdated);
-
+            LatestQuotesUSD latestQuotesUSD= getQuotesObject(quotesData);
             latestQuotesRepository.save(latestQuotesUSD);
         });
     }
 
-    public void getFromAPI(List<Integer> ids) {
+
+    public LatestQuotesUSD getQuotesObject(LinkedHashMap quotesData) {
+        LatestQuotesUSD latestQuotesUSD= new LatestQuotesUSD();
+        latestQuotesUSD.setPrice(((Number) quotesData.get("price")).doubleValue());
+        latestQuotesUSD.setVolume24H(((Number) quotesData.get("volume_24h")).doubleValue());
+        latestQuotesUSD.setVolumeChange24H(((Number) quotesData.get("volume_change_24h")).doubleValue());
+        latestQuotesUSD.setPercentChange1H(((Number) quotesData.get("percent_change_1h")).doubleValue());
+        latestQuotesUSD.setPercentChange24H(((Number) quotesData.get("percent_change_24h")).doubleValue());
+        latestQuotesUSD.setPercentChange7D(((Number) quotesData.get("percent_change_7d")).doubleValue());
+        latestQuotesUSD.setPercentChange30D(((Number) quotesData.get("percent_change_30d")).doubleValue());
+        latestQuotesUSD.setPercentChange60D(((Number) quotesData.get("percent_change_60d")).doubleValue());
+        latestQuotesUSD.setPercentChange90D(((Number) quotesData.get("percent_change_90d")).doubleValue());
+        latestQuotesUSD.setMarketCap(((Number) quotesData.get("market_cap")).doubleValue());
+        latestQuotesUSD.setMarketCapDominance(((Number) quotesData.get("market_cap_dominance")).doubleValue());
+        latestQuotesUSD.setFullyDilutedMarketCap(((Number) quotesData.get("fully_diluted_market_cap")).doubleValue());
+        String lastUpdatedString = (String) quotesData.get("last_updated");
+        latestQuotesUSD.setLastUpdated(LocalDateTime.parse(lastUpdatedString.substring(0, lastUpdatedString.length()-1)));
+
+        return latestQuotesUSD;
+    }
+
+    private void getFromAPI(List<Integer> ids) {
         String idsAsString  = "";
         for (Integer id: ids) {
             if (idsAsString.isBlank()) idsAsString += id.toString();
@@ -82,6 +89,6 @@ public class LatestQuotesService {
         HttpEntity<String> httpEntity = new HttpEntity<>(headers);
 
         ResponseEntity<Map> latestQuotesResponse = restTemplate.exchange(url, HttpMethod.GET,  httpEntity, Map.class);
-        fillDb(latestQuotesResponse, ids);
+        readQuotesResponse(latestQuotesResponse, ids);
     }
 }
