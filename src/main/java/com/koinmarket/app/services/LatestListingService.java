@@ -3,6 +3,7 @@ package com.koinmarket.app.services;
 
 import com.koinmarket.app.AppAPIConfiguration;
 import com.koinmarket.app.entities.LatestListings;
+import com.koinmarket.app.entities.LatestQuotesUSD;
 import com.koinmarket.app.repositories.LatestListingRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,10 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class LatestListingService {
@@ -33,9 +31,9 @@ public class LatestListingService {
     @Autowired
     private AppAPIConfiguration config;
 
-    @Scheduled(fixedDelay = 3600000)
+    @Scheduled(fixedRate = 3600000)
     public void execute() {
-        String url = config.getUrl() + "/v1/cryptocurrency/listings/latest?start=1&limit=5000&sort=market_cap&cryptocurrency_type=all&tag=all";
+        String url = config.getUrl() + "/v1/cryptocurrency/listings/latest?start=1&limit=" + config.getListingLimit() + "&sort=market_cap&cryptocurrency_type=all&tag=all";
         HttpHeaders headers = new HttpHeaders();
         headers.set("X-CMC_PRO_API_KEY", config.getKey());
         RestTemplate restTemplate = new RestTemplate();
@@ -61,7 +59,14 @@ public class LatestListingService {
             listing.setTotalSupply(data.get("total_supply") == null ? null : ((Number) data.get("total_supply")).doubleValue());
             LinkedHashMap quotesDataPerCurrency = (LinkedHashMap) data.get("quote");
             LinkedHashMap quotesData= (LinkedHashMap) quotesDataPerCurrency.get("USD");
-            listing.setQuotesUSD(quotesService.getQuotesObject(quotesData));
+            Optional<LatestListings> existingListing = repository.findById((Integer) data.get("id"));
+            if (existingListing.isEmpty()) {
+                listing.setQuotesUSD(quotesService.getQuotesObject(quotesData, new LatestQuotesUSD()));
+            }
+            else {
+                listing.setQuotesUSD(quotesService.getQuotesObject(quotesData, existingListing.get().getQuotesUSD()));
+            }
+
             repository.save(listing);
 
         }

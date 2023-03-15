@@ -49,30 +49,30 @@ public class LatestQuotesService {
             LinkedHashMap responseDataPerID = (LinkedHashMap) responseData.get(Integer.toString(id));
             LinkedHashMap quotesDataPerCurrency = (LinkedHashMap) responseDataPerID.get("quote");
             LinkedHashMap quotesData= (LinkedHashMap) quotesDataPerCurrency.get("USD");
-            LatestQuotesUSD latestQuotesUSD= getQuotesObject(quotesData);
+            LatestQuotesUSD latestQuotesUSD= getQuotesObject(quotesData, new LatestQuotesUSD());
             latestQuotesRepository.save(latestQuotesUSD);
         });
     }
 
 
-    public LatestQuotesUSD getQuotesObject(LinkedHashMap quotesData) {
-        LatestQuotesUSD latestQuotesUSD= new LatestQuotesUSD();
-        latestQuotesUSD.setPrice(((Number) quotesData.get("price")).doubleValue());
-        latestQuotesUSD.setVolume24H(((Number) quotesData.get("volume_24h")).doubleValue());
-        latestQuotesUSD.setVolumeChange24H(((Number) quotesData.get("volume_change_24h")).doubleValue());
-        latestQuotesUSD.setPercentChange1H(((Number) quotesData.get("percent_change_1h")).doubleValue());
-        latestQuotesUSD.setPercentChange24H(((Number) quotesData.get("percent_change_24h")).doubleValue());
-        latestQuotesUSD.setPercentChange7D(((Number) quotesData.get("percent_change_7d")).doubleValue());
-        latestQuotesUSD.setPercentChange30D(((Number) quotesData.get("percent_change_30d")).doubleValue());
-        latestQuotesUSD.setPercentChange60D(((Number) quotesData.get("percent_change_60d")).doubleValue());
-        latestQuotesUSD.setPercentChange90D(((Number) quotesData.get("percent_change_90d")).doubleValue());
-        latestQuotesUSD.setMarketCap(((Number) quotesData.get("market_cap")).doubleValue());
-        latestQuotesUSD.setMarketCapDominance(((Number) quotesData.get("market_cap_dominance")).doubleValue());
-        latestQuotesUSD.setFullyDilutedMarketCap(((Number) quotesData.get("fully_diluted_market_cap")).doubleValue());
-        String lastUpdatedString = (String) quotesData.get("last_updated");
-        latestQuotesUSD.setLastUpdated(LocalDateTime.parse(lastUpdatedString.substring(0, lastUpdatedString.length()-1)));
+    public LatestQuotesUSD getQuotesObject(LinkedHashMap quotesData, LatestQuotesUSD latestQuotesObject) {
 
-        return latestQuotesUSD;
+        latestQuotesObject.setPrice(((Number) quotesData.get("price")).doubleValue());
+        latestQuotesObject.setVolume24H(((Number) quotesData.get("volume_24h")).doubleValue());
+        latestQuotesObject.setVolumeChange24H(((Number) quotesData.get("volume_change_24h")).doubleValue());
+        latestQuotesObject.setPercentChange1H(((Number) quotesData.get("percent_change_1h")).doubleValue());
+        latestQuotesObject.setPercentChange24H(((Number) quotesData.get("percent_change_24h")).doubleValue());
+        latestQuotesObject.setPercentChange7D(((Number) quotesData.get("percent_change_7d")).doubleValue());
+        latestQuotesObject.setPercentChange30D(((Number) quotesData.get("percent_change_30d")).doubleValue());
+        latestQuotesObject.setPercentChange60D(((Number) quotesData.get("percent_change_60d")).doubleValue());
+        latestQuotesObject.setPercentChange90D(((Number) quotesData.get("percent_change_90d")).doubleValue());
+        latestQuotesObject.setMarketCap(((Number) quotesData.get("market_cap")).doubleValue());
+        latestQuotesObject.setMarketCapDominance(((Number) quotesData.get("market_cap_dominance")).doubleValue());
+        latestQuotesObject.setFullyDilutedMarketCap(((Number) quotesData.get("fully_diluted_market_cap")).doubleValue());
+        String lastUpdatedString = (String) quotesData.get("last_updated");
+        latestQuotesObject.setLastUpdated(LocalDateTime.parse(lastUpdatedString.substring(0, lastUpdatedString.length()-1)));
+
+        return latestQuotesObject;
     }
 
     private void getFromAPI(List<Integer> ids) {
