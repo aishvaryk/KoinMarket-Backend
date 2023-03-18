@@ -2,6 +2,9 @@ package com.koinmarket.app.services;
 
 import com.koinmarket.app.AppAPIConfiguration;
 import com.koinmarket.app.entities.LatestQuotesUSD;
+import com.koinmarket.app.exceptions.CMCResponseErrorHandler;
+import com.koinmarket.app.exceptions.quotes.QuotesNotFetched;
+import com.koinmarket.app.exceptions.quotes.QuotesNotFoundException;
 import com.koinmarket.app.repositories.LatestQuotesRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,14 +32,22 @@ public class LatestQuotesService {
 
     public ResponseEntity<List<LatestQuotesUSD>> getQuotesById(List<Integer> ids) {
 
-        List<Integer> idParameter = new ArrayList<>();
-         for (Integer id : ids) {
-             if (!latestQuotesRepository.existsById(id)) {
-                 idParameter.add(id);
-             }
-         }
-        if (!idParameter.isEmpty()) getFromAPI(idParameter);
-        List<LatestQuotesUSD> latestQuotes= latestQuotesRepository.findAllById(ids);
+        List<LatestQuotesUSD> latestQuotes;
+        try {
+            List<Integer> idParameter = new ArrayList<>();
+            for (Integer id : ids) {
+                if (!latestQuotesRepository.existsById(id)) {
+                    idParameter.add(id);
+                }
+            }
+            if (!idParameter.isEmpty()) getFromAPI(idParameter);
+            latestQuotes = latestQuotesRepository.findAllById(ids);
+        } catch (Exception e) {
+            throw new QuotesNotFetched();
+        }
+        if (latestQuotes.isEmpty()) {
+            throw new QuotesNotFoundException();
+        }
         return ResponseEntity.ok().body(latestQuotes);
     }
 
@@ -48,8 +59,8 @@ public class LatestQuotesService {
         ids.forEach(id -> {
             LinkedHashMap responseDataPerID = (LinkedHashMap) responseData.get(Integer.toString(id));
             LinkedHashMap quotesDataPerCurrency = (LinkedHashMap) responseDataPerID.get("quote");
-            LinkedHashMap quotesData= (LinkedHashMap) quotesDataPerCurrency.get("USD");
-            LatestQuotesUSD latestQuotesUSD= getQuotesObject(quotesData, new LatestQuotesUSD());
+            LinkedHashMap quotesData = (LinkedHashMap) quotesDataPerCurrency.get("USD");
+            LatestQuotesUSD latestQuotesUSD = getQuotesObject(quotesData, new LatestQuotesUSD());
             latestQuotesRepository.save(latestQuotesUSD);
         });
     }
@@ -70,14 +81,14 @@ public class LatestQuotesService {
         latestQuotesObject.setMarketCapDominance(((Number) quotesData.get("market_cap_dominance")).doubleValue());
         latestQuotesObject.setFullyDilutedMarketCap(((Number) quotesData.get("fully_diluted_market_cap")).doubleValue());
         String lastUpdatedString = (String) quotesData.get("last_updated");
-        latestQuotesObject.setLastUpdated(LocalDateTime.parse(lastUpdatedString.substring(0, lastUpdatedString.length()-1)));
+        latestQuotesObject.setLastUpdated(LocalDateTime.parse(lastUpdatedString.substring(0, lastUpdatedString.length() - 1)));
 
         return latestQuotesObject;
     }
 
     private void getFromAPI(List<Integer> ids) {
-        String idsAsString  = "";
-        for (Integer id: ids) {
+        String idsAsString = "";
+        for (Integer id : ids) {
             if (idsAsString.isBlank()) idsAsString += id.toString();
             else idsAsString += "," + id.toString();
         }
@@ -86,9 +97,10 @@ public class LatestQuotesService {
         headers.set("X-CMC_PRO_API_KEY", config.getKey());
 
         RestTemplate restTemplate = new RestTemplate();
+        restTemplate.setErrorHandler(new CMCResponseErrorHandler());
         HttpEntity<String> httpEntity = new HttpEntity<>(headers);
 
-        ResponseEntity<Map> latestQuotesResponse = restTemplate.exchange(url, HttpMethod.GET,  httpEntity, Map.class);
+        ResponseEntity<Map> latestQuotesResponse = restTemplate.exchange(url, HttpMethod.GET, httpEntity, Map.class);
         readQuotesResponse(latestQuotesResponse, ids);
     }
 }
