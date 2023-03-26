@@ -1,4 +1,4 @@
-package com.koinmarket.app;
+package com.koinmarket.app.configurations;
 
 
 import lombok.Getter;

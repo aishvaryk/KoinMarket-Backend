@@ -20,9 +20,11 @@ public class User implements UserDetails {
     @GeneratedValue
     private Integer id;
 
+    @Column(unique=true)
     @Getter @Setter
     private String username;
 
+    @Column(unique=true)
     @Getter @Setter
     private String emailAddress;
 

@@ -1,6 +1,6 @@
 package com.koinmarket.app.services;
 
-import com.koinmarket.app.AppAPIConfiguration;
+import com.koinmarket.app.configurations.AppAPIConfiguration;
 import com.koinmarket.app.entities.LatestListings;
 import com.koinmarket.app.entities.LatestQuotesUSD;
 import com.koinmarket.app.exceptions.CMCResponseErrorHandler;
@@ -79,7 +79,7 @@ public class LatestListingService {
     public List<LatestListings> getListOfCoins(int pageNo, int count, String orderBy, Sort.Direction direction) {
         List<LatestListings> listings;
         try {
-            listings = repository.findAll(PageRequest.of(pageNo - 1, count, Sort.by(Sort.Direction.DESC, orderBy))).getContent();
+            listings = repository.findAll(PageRequest.of(pageNo - 1, count, Sort.by(direction, orderBy))).getContent();
             if (listings.isEmpty()) {
                 throw new ListingsNotFoundException();
             }

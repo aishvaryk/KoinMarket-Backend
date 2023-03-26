@@ -1,13 +1,18 @@
 package com.koinmarket.app.services;
 
+import com.koinmarket.app.configurations.AdminUserConfiguration;
 import com.koinmarket.app.entities.JwtToken;
 import com.koinmarket.app.entities.User;
 import com.koinmarket.app.enums.Role;
 import com.koinmarket.app.exceptions.authentication.TokenNotGenerated;
+import com.koinmarket.app.exceptions.user.UserAlreadyExistException;
 import com.koinmarket.app.repositories.JwtTokenRepository;
 import com.koinmarket.app.repositories.UserRepository;
 import com.koinmarket.app.requestBodies.RegisterRequestBody;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,7 +24,7 @@ import java.util.List;
 public class MyUserService {
 
     @Autowired
-    private UserRepository repository;
+    private UserRepository userRepository;
 
     @Autowired
     private JwtTokenRepository jwtTokenRepository;
@@ -33,19 +38,37 @@ public class MyUserService {
     @Autowired
     private AuthenticationManager authenticationManager;
 
+    @Autowired
+    private AdminUserConfiguration adminUserConfiguration;
+
+    @EventListener(ApplicationReadyEvent.class)
+    public void runAfterStartup() {
+        User user = new User(adminUserConfiguration.getUsername(), "",  passwordEncoder.encode(adminUserConfiguration.getPassword()), Role.ADMIN);
+        userRepository.save(user);
+    }
+
+    @Transactional
     public JwtToken register(RegisterRequestBody registerRequestBody) {
-        var user = new User(registerRequestBody.getEmailAddress(), registerRequestBody.getUsername(), passwordEncoder.encode(registerRequestBody.getPassword()), Role.USER);
-        var savedUser = repository.save(user);
-        var jwtTokenString = jwtService.generateToken(user);
+        String username = registerRequestBody.getUsername();
+        String email = registerRequestBody.getEmailAddress();
+        if (userRepository.existsByUsername(username)) {
+            throw new UserAlreadyExistException("Username already in use");
+        }
+        else if (userRepository.existsByEmailAddress(email)) {
+            throw new UserAlreadyExistException("Email Address already in use");
+        }
+        User user = new User(username, email, passwordEncoder.encode(registerRequestBody.getPassword()), Role.USER);
+        User savedUser = userRepository.save(user);
+        String jwtTokenString = jwtService.generateToken(user);
         saveUserToken(savedUser, jwtTokenString);
         JwtToken jwtToken= jwtTokenRepository.findByToken(jwtTokenString).orElseThrow(()-> {return new TokenNotGenerated();});
         return jwtToken;
     }
 
     public JwtToken authenticate(String username, String password) {
-        User user = repository.findByUsername(username).orElse(null);
+        User user = userRepository.findByUsername(username).orElse(null);
         if(user==null)    {
-            repository.findByEmailAddress(username).orElseThrow();
+            userRepository.findByEmailAddress(username).orElseThrow();
         }
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -60,11 +83,13 @@ public class MyUserService {
         return jwtToken;
     }
 
+    @Transactional
     private void saveUserToken(User user, String jwtToken) {
         JwtToken token = new JwtToken(jwtToken, false, user);
         jwtTokenRepository.save(token);
     }
 
+    @Transactional
     private void revokeAllUserTokens(User user) {
         List<JwtToken> validUserTokens = jwtTokenRepository.findAllByUser(user);
         if (validUserTokens.isEmpty())
