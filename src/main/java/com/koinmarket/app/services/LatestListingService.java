@@ -57,13 +57,18 @@ public class LatestListingService {
                 listing.setSlug((String) data.get("slug"));
                 listing.setRank((Integer) data.get("cmc_rank"));
                 String lastUpdatedString = (String) data.get("last_updated");
+                LinkedHashMap quotesDataPerCurrency = (LinkedHashMap) data.get("quote");
+                LinkedHashMap quotesData = (LinkedHashMap) quotesDataPerCurrency.get("USD");
                 listing.setLastUpdated(LocalDateTime.parse(lastUpdatedString.substring(0, lastUpdatedString.length() - 1)));
                 listing.setMaxSupply(data.get("max_supply") == null ? null : ((Number) data.get("max_supply")).doubleValue());
                 listing.setCirculatingSupply(data.get("circulating_supply") == null ? null : ((Number) data.get("circulating_supply")).doubleValue());
                 listing.setTotalSupply(data.get("total_supply") == null ? null : ((Number) data.get("total_supply")).doubleValue());
-                LinkedHashMap quotesDataPerCurrency = (LinkedHashMap) data.get("quote");
-                LinkedHashMap quotesData = (LinkedHashMap) quotesDataPerCurrency.get("USD");
-                Optional<LatestListings> existingListing = repository.findById((Integer) data.get("id"));
+                Optional<LatestListings> existingListing =null;
+                try {
+                    existingListing = repository.findById((Integer) data.get("id"));
+                } catch (Exception ignore) {
+//                    throw e;
+                }
                 if (existingListing.isEmpty()) {
                     listing.setQuotesUSD(quotesService.getQuotesObject(quotesData, new LatestQuotesUSD()));
                 } else {

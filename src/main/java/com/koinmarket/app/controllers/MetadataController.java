@@ -16,6 +16,6 @@ public class MetadataController {
 
     @GetMapping
     public ResponseEntity<List<Metadata>> getMetadataById(@RequestParam() List<Integer> ids) {
-        return metadataService.getMetadataById(ids);
+        return ResponseEntity.ok().body(metadataService.getMetadataById(ids));
     }
 }

@@ -13,6 +13,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -43,9 +44,14 @@ public class MyUserService {
 
     @EventListener(ApplicationReadyEvent.class)
     public void runAfterStartup() {
-        User user = new User(adminUserConfiguration.getUsername(), "",  passwordEncoder.encode(adminUserConfiguration.getPassword()), Role.ADMIN);
-        userRepository.save(user);
+        if (!userRepository.existsByUsername(adminUserConfiguration.getUsername())) {
+            User user = new User(adminUserConfiguration.getUsername(), "",  passwordEncoder.encode(adminUserConfiguration.getPassword()), Role.ADMIN);
+            userRepository.save(user);
+        }
     }
+
+
+
 
     @Transactional
     public JwtToken register(RegisterRequestBody registerRequestBody) {

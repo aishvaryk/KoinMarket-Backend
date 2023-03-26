@@ -27,7 +27,7 @@ public class MetadataService {
     @Autowired
     private AppAPIConfiguration config;
 
-    public ResponseEntity<List<Metadata>> getMetadataById(List<Integer> ids) {
+    public List<Metadata> getMetadataById(List<Integer> ids) {
 
         List<Integer> idParameter = new ArrayList<>();
         for (Integer id : ids) {
@@ -37,7 +37,7 @@ public class MetadataService {
         }
         if (!idParameter.isEmpty()) getFromAPI(idParameter);
         List<Metadata> metadata = metadataRepository.findAllById(ids);
-        return ResponseEntity.ok().body(metadata);
+        return metadata;
     }
 
     @Transactional

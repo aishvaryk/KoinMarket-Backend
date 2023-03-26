@@ -3,8 +3,10 @@ package com.koinmarket.app.entities;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+@NoArgsConstructor
 @Getter @Setter
 @Entity
 @Table(name = "Metadata")
@@ -32,10 +34,6 @@ public class Metadata {
     @OneToOne
     @JoinColumn(name = "latest_listing_id")
     @MapsId
-    @JsonBackReference
+    @JsonBackReference //helps with serialising object without infinite recursion
     private LatestListings latestListings;
-
-    public Metadata() {
-        super();
-    }
 }

@@ -4,11 +4,13 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Getter
+@NoArgsConstructor
 @Entity
 public class LatestListings {
 
@@ -44,16 +46,12 @@ public class LatestListings {
     private Double totalSupply;
 
     @OneToOne(mappedBy = "latestListings" , cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonManagedReference
+    @JsonManagedReference //helps with serialising object without infinite recursion
     private LatestQuotesUSD quotesUSD;
 
     @OneToOne(mappedBy = "latestListings" , cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonManagedReference
+    @JsonManagedReference //helps with serialising object without infinite recursion
     private Metadata metadata;
-
-    public LatestListings() {
-        super();
-    }
 
     public void setQuotesUSD(LatestQuotesUSD quotesUSD) {
         this.quotesUSD = quotesUSD;

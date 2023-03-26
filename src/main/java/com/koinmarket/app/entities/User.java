@@ -11,27 +11,23 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 
+@Getter @Setter
 @Entity
 @Table(name = "KoinMarket_User") //user is a reserved keyword in PostgreSQL
 public class User implements UserDetails {
 
     @Id
-    @Getter @Setter
     @GeneratedValue
     private Integer id;
 
     @Column(unique=true)
-    @Getter @Setter
     private String username;
 
     @Column(unique=true)
-    @Getter @Setter
     private String emailAddress;
 
-    @Getter @Setter
     private String password;
 
-    @Getter @Setter
     @Enumerated(EnumType.STRING)
     private Role role;
 
