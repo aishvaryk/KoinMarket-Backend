@@ -31,18 +31,25 @@ public class LatestListingController {
         List<LatestListings> latestListingsEntities;
         List<ListingDTO> latestListingDTOs = new ArrayList<>();
 
+
         if (direction.equals("desc")) {
             latestListingsEntities = latestListingService.getListOfCoins(pageNo, count, orderBy, Sort.Direction.DESC);
         } else {
             latestListingsEntities =  latestListingService.getListOfCoins(pageNo, count, orderBy, Sort.Direction.ASC);
         }
         latestListingsEntities.forEach(latestListingsEntity -> {
+            latestListingDTOs.add(convertListEntityToDTO(latestListingsEntity));
+        });
+
+        return latestListingDTOs;
+    }
+
+    public ListingDTO convertListEntityToDTO(LatestListings latestListingsEntity) {
+
             ListingDTO latestListingDTO = new ListingDTO(latestListingsEntity);
             if (latestListingDTO.getLogoURL()==null) {
                 latestListingDTO.setLogoURL(metadataService.getMetadataById(Collections.singletonList(latestListingDTO.getId())).get(0).getLogoURL());
             }
-            latestListingDTOs.add(latestListingDTO);
-        });
-        return latestListingDTOs;
+        return latestListingDTO;
     }
 }

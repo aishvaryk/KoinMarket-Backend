@@ -1,12 +1,7 @@
 package com.koinmarket.app.dtos;
 
 import com.koinmarket.app.entities.LatestListings;
-import com.koinmarket.app.services.MetadataService;
 import lombok.Data;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import java.util.Collections;
 
 @Data
 public class ListingDTO {

@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Getter
 @NoArgsConstructor
@@ -52,6 +54,15 @@ public class LatestListings {
     @OneToOne(mappedBy = "latestListings" , cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference //helps with serialising object without infinite recursion
     private Metadata metadata;
+
+    @ManyToMany(fetch = FetchType.LAZY,
+            cascade = {
+                    CascadeType.PERSIST,
+                    CascadeType.MERGE
+            },mappedBy = "latestListings")
+    @JsonBackReference
+    private Set<Watchlist> watchlists= new HashSet<>();
+
 
     public void setQuotesUSD(LatestQuotesUSD quotesUSD) {
         this.quotesUSD = quotesUSD;

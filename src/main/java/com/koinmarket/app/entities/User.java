@@ -1,16 +1,17 @@
 package com.koinmarket.app.entities;
-
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.koinmarket.app.enums.Role;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
+@NoArgsConstructor
 @Getter @Setter
 @Entity
 @Table(name = "KoinMarket_User") //user is a reserved keyword in PostgreSQL
@@ -31,13 +32,26 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    public User() {};
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private Set<Watchlist> watchlist = new HashSet<>();
 
     public User(String userName, String emailAddress, String password, Role role) {
         this.setUsername(userName);
         this.setEmailAddress(emailAddress);
         this.setPassword(password);
         this.setRole(role);
+    }
+
+    public User addWatchlist(Watchlist watchlist) {
+        if (!this.watchlist.contains(watchlist)) {
+            this.watchlist.add(watchlist);
+        }
+        return this;
+    }
+
+    public Boolean removeWatchlist(Watchlist watchlist) {
+        return this.watchlist.remove(watchlist);
     }
 
     @Override
