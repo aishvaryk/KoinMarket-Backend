@@ -1,6 +1,11 @@
 package com.koinmarket.app.configurations;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.koinmarket.app.entities.User;
 import com.koinmarket.app.repositories.JwtTokenRepository;
+import com.koinmarket.app.repositories.UserRepository;
+import com.koinmarket.app.requestBodies.LoginRequestBody;
+import com.koinmarket.app.requestBodies.RegisterRequestBody;
 import com.koinmarket.app.services.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -31,6 +36,9 @@ public class JwtAuthorisationFilter extends BasicAuthenticationFilter {
     @Autowired
     private UserDetailsService userDetailsService;
 
+    @Autowired
+    private UserRepository userRepository;
+
     public JwtAuthorisationFilter(AuthenticationManager authenticationManager) {
         super(authenticationManager);
     }
@@ -45,6 +53,11 @@ public class JwtAuthorisationFilter extends BasicAuthenticationFilter {
         final String authHeader = request.getHeader("Authorization");
 
         if (authHeader == null ||!authHeader.startsWith("Bearer ")) {
+            if (request.getRequestURI().equals("/register")) {
+                if (checkIfUsernameOrEmailExits(request, response)) return;
+            } else if (request.getRequestURI().equals("/login")) {
+                if (checkIfUsernameIncorrect(request, response)) return;
+            }
             filterChain.doFilter(request, response);
             return;
         }
@@ -65,5 +78,39 @@ public class JwtAuthorisationFilter extends BasicAuthenticationFilter {
             }
         }
         filterChain.doFilter(request, response);
+    }
+
+    private boolean checkIfUsernameIncorrect(HttpServletRequest request, HttpServletResponse response) throws IOException {ObjectMapper mapper = new ObjectMapper();
+        LoginRequestBody loginRequestBody = mapper.readValue(request.getInputStream(), LoginRequestBody.class);
+        String username = loginRequestBody.getUsername();
+        User user = userRepository.findByUsername(username).orElse(null);
+        if(user==null)   userRepository.findByEmailAddress(username).orElse(null);
+        if(user==null) {
+            response.setContentType("application/json");
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getOutputStream().println("{ \"error\": \"" + "Incorrect Email or username" + "\" }");
+            return true;
+        }
+        return false;
+    }
+
+    private boolean checkIfUsernameOrEmailExits( HttpServletRequest request, HttpServletResponse response) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        RegisterRequestBody registerRequestBody = mapper.readValue(request.getInputStream(),RegisterRequestBody.class);
+        String username = registerRequestBody.getUsername();
+        String email = registerRequestBody.getEmailAddress();
+        if (userRepository.existsByUsername(username)) {
+            response.setContentType("application/json");
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getOutputStream().println("{ \"error\": \"" + "Username already exists" + "\" }");
+            return true;
+        }
+        else if (userRepository.existsByEmailAddress(email)) {
+            response.setContentType("application/json");
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getOutputStream().println("{ \"error\": \"" + "Email already exists" + "\" }");
+            return true;
+        }
+        return false;
     }
 }
