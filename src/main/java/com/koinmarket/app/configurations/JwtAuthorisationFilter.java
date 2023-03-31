@@ -7,6 +7,7 @@ import com.koinmarket.app.repositories.UserRepository;
 import com.koinmarket.app.requestBodies.LoginRequestBody;
 import com.koinmarket.app.requestBodies.RegisterRequestBody;
 import com.koinmarket.app.services.JwtService;
+import com.koinmarket.app.utils.CachedBodyHttpServletRequest;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -50,15 +51,16 @@ public class JwtAuthorisationFilter extends BasicAuthenticationFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
+        CachedBodyHttpServletRequest cachedRequest = new CachedBodyHttpServletRequest(request);
         final String authHeader = request.getHeader("Authorization");
 
         if (authHeader == null ||!authHeader.startsWith("Bearer ")) {
-            if (request.getRequestURI().equals("/register")) {
-                if (checkIfUsernameOrEmailExits(request, response)) return;
-            } else if (request.getRequestURI().equals("/login")) {
-                if (checkIfUsernameIncorrect(request, response)) return;
+            if (cachedRequest.getRequestURI().equals("/register")) {
+                if (checkIfUsernameOrEmailExits(cachedRequest, response)) return;
+            } else if (cachedRequest.getRequestURI().equals("/login")) {
+                if (checkIfUsernameIncorrect(cachedRequest, response)) return;
             }
-            filterChain.doFilter(request, response);
+            filterChain.doFilter(cachedRequest, response);
             return;
         }
         final String token = authHeader.split(" ")[1].trim();
@@ -77,19 +79,21 @@ public class JwtAuthorisationFilter extends BasicAuthenticationFilter {
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }
-        filterChain.doFilter(request, response);
+        filterChain.doFilter(cachedRequest, response);
     }
 
     private boolean checkIfUsernameIncorrect(HttpServletRequest request, HttpServletResponse response) throws IOException {ObjectMapper mapper = new ObjectMapper();
         LoginRequestBody loginRequestBody = mapper.readValue(request.getInputStream(), LoginRequestBody.class);
         String username = loginRequestBody.getUsername();
         User user = userRepository.findByUsername(username).orElse(null);
-        if(user==null)   userRepository.findByEmailAddress(username).orElse(null);
         if(user==null) {
-            response.setContentType("application/json");
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.getOutputStream().println("{ \"error\": \"" + "Incorrect Email or username" + "\" }");
-            return true;
+            userRepository.findByEmailAddress(username).orElse(null);
+            if(user==null) {
+                response.setContentType("application/json");
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getOutputStream().println("{ \"error\": \"" + "Incorrect Email or username" + "\" }");
+                return true;
+            }
         }
         return false;
     }
