@@ -1,5 +1,7 @@
 package com.koinmarket.app.configurations;
 
+import com.koinmarket.app.configurations.security_exceptions.CustomAccessDeniedHandler;
+import com.koinmarket.app.configurations.security_exceptions.CustomAuthenticationEntryPoint;
 import com.koinmarket.app.services.LogoutService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -22,6 +24,11 @@ public class SecurityConfiguration {
     @Autowired
     private AuthenticationProvider authenticationProvider;
 
+    @Autowired
+    private CustomAuthenticationEntryPoint authenticationEntryPoint;
+
+    @Autowired
+    private CustomAccessDeniedHandler accessDeniedHandler;
 
 
     @Bean
@@ -37,6 +44,10 @@ public class SecurityConfiguration {
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             .and()
             .authenticationProvider(authenticationProvider)
+                .exceptionHandling()
+                    .authenticationEntryPoint(authenticationEntryPoint)
+                    .accessDeniedHandler(accessDeniedHandler)
+            .and()
             .addFilterBefore(jwtAuthorisationFilter, UsernamePasswordAuthenticationFilter.class)
             .logout().logoutUrl("/logout").addLogoutHandler(logoutService).logoutSuccessHandler((request, response, authentication) -> SecurityContextHolder.clearContext())
         ;

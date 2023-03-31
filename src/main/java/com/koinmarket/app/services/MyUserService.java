@@ -6,6 +6,7 @@ import com.koinmarket.app.entities.User;
 import com.koinmarket.app.enums.Role;
 import com.koinmarket.app.exceptions.authentication.TokenNotGenerated;
 import com.koinmarket.app.exceptions.user.UserAlreadyExistException;
+import com.koinmarket.app.exceptions.user.UserNotFoundException;
 import com.koinmarket.app.repositories.JwtTokenRepository;
 import com.koinmarket.app.repositories.UserRepository;
 import com.koinmarket.app.requestBodies.RegisterRequestBody;
@@ -73,7 +74,7 @@ public class MyUserService {
     public JwtToken authenticate(String username, String password) {
         User user = userRepository.findByUsername(username).orElse(null);
         if(user==null)    {
-            userRepository.findByEmailAddress(username).orElseThrow();
+            userRepository.findByEmailAddress(username).orElseThrow(()->new UserNotFoundException());
         }
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
