@@ -7,6 +7,7 @@ import com.koinmarket.app.services.WatchlistService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -23,6 +24,7 @@ public class WatchlistController {
     @Autowired
     private LatestListingController listingController;
 
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USER')")
     @GetMapping("/{id}")
     public ResponseEntity<WatchlistDTO> getWatchlist(@PathVariable("id") Integer id) {
         Watchlist watchlistEntity =  watchlistService.getWatchlistById(id);
@@ -30,6 +32,7 @@ public class WatchlistController {
         return ResponseEntity.ok().body(watchlistDTO);
     }
 
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USER')")
     @GetMapping("/all")
     public ResponseEntity<List<WatchlistDTO> >getAllWatchlistsByUser() {
         List<Watchlist> watchlistEntityList = watchlistService.getAllWatchlistsByUser();
@@ -40,6 +43,7 @@ public class WatchlistController {
         return ResponseEntity.ok().body(watchlistDTOList);
     }
 
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USER')")
     @PostMapping("/add")
     public ResponseEntity<WatchlistDTO> addWatchlistByUser(@RequestParam String name) {
         Watchlist watchlistEntity =  watchlistService.addWatchlistByUser(name);
@@ -47,6 +51,7 @@ public class WatchlistController {
         return ResponseEntity.ok().body(watchlistDTO);
     }
 
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USER')")
     @PutMapping("/{id}/add")
     public ResponseEntity<WatchlistDTO> addItemToWatchList(@PathVariable("id") Integer id, @RequestParam Integer coinId) {
         Watchlist watchlistEntity = watchlistService.addItemToWatchList(id, coinId);
@@ -54,6 +59,7 @@ public class WatchlistController {
         return ResponseEntity.ok().body(watchlistDTO);
     }
 
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USER')")
     @PutMapping("/{id}/remove")
     public ResponseEntity<WatchlistDTO> removeItemFromWatchList(@PathVariable("id") Integer id, @RequestParam Integer coinId) {
         Watchlist watchlistEntity =  watchlistService.removeItemFromWatchList(id, coinId);
@@ -61,12 +67,14 @@ public class WatchlistController {
         return ResponseEntity.ok().body(watchlistDTO);
     }
 
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USER')")
     @DeleteMapping("/delete")
     public ResponseEntity<HttpStatus> removeWatchlist(@RequestParam Integer id) {
         HttpStatus httpStatus = watchlistService.removeWatchlistByUser(id);
         return ResponseEntity.ok().body(httpStatus);
     }
 
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USER')")
     public WatchlistDTO convertWatchlistEntityToDTO(Watchlist watchlist) {
         Integer id = watchlist.getId();
         String name = watchlist.getName();
