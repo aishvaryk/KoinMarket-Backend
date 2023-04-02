@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter @Setter
 @NoArgsConstructor
@@ -13,20 +15,28 @@ public class JwtToken {
 
     @Id
     @GeneratedValue
-    public Integer id;
+    private Integer id;
 
     @Column(unique = true)
-    public String token;
+    private String token;
 
-    public boolean expired;
+    private boolean expired;
+
+    @Column(name = "created_at")
+    private LocalDateTime creationTime;
+
+    @Column(name = "expiration_time")
+    private LocalDateTime expirationTime;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    public User user;
+    private User user;
 
-    public JwtToken(String jwtToken, boolean expired, User user) {
+    public JwtToken(String jwtToken, boolean expired, User user, LocalDateTime creationTime, LocalDateTime expirationTime) {
         this.setToken(jwtToken);
         this.setExpired(expired);
         this.setUser(user);
+        this.setCreationTime(creationTime);
+        this.setExpirationTime(expirationTime);
     }
 }
