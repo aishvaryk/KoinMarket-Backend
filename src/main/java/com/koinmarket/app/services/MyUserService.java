@@ -1,6 +1,7 @@
 package com.koinmarket.app.services;
 
 import com.koinmarket.app.configurations.AdminUserConfiguration;
+import com.koinmarket.app.configurations.JwtConfiguration;
 import com.koinmarket.app.entities.JwtToken;
 import com.koinmarket.app.entities.User;
 import com.koinmarket.app.enums.Role;
@@ -19,10 +20,16 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class MyUserService {
+
+    @Autowired
+    private JwtConfiguration jwtConfiguration;
 
     @Autowired
     private UserRepository userRepository;
@@ -49,9 +56,6 @@ public class MyUserService {
             userRepository.save(user);
         }
     }
-
-
-
 
     @Transactional
     public JwtToken register(RegisterRequestBody registerRequestBody) {
@@ -91,7 +95,7 @@ public class MyUserService {
 
     @Transactional
     private void saveUserToken(User user, String jwtToken) {
-        JwtToken token = new JwtToken(jwtToken, false, user);
+        JwtToken token = new JwtToken(jwtToken, false, user, LocalDateTime.now(), LocalDateTime.now().plusDays(TimeUnit.MILLISECONDS.toDays(jwtConfiguration.getExpiration())));
         jwtTokenRepository.save(token);
     }
 

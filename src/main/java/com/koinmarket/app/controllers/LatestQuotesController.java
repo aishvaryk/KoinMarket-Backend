@@ -4,6 +4,7 @@ import com.koinmarket.app.entities.LatestQuotesUSD;
 import com.koinmarket.app.services.LatestQuotesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,6 +15,7 @@ public class LatestQuotesController{
     @Autowired
     private LatestQuotesService latestQuotesService;
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping
     public ResponseEntity<List<LatestQuotesUSD>> getQuotesById(@RequestParam() List<Integer> ids) {
         return latestQuotesService.getQuotesById(ids);
