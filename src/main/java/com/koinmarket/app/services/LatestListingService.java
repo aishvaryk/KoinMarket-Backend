@@ -48,6 +48,7 @@ public class LatestListingService {
     @Transactional
     public void fillDb(ResponseEntity<Map> LatestListingsResponse) {
         ArrayList<LinkedHashMap> LatestListingsData = (ArrayList<LinkedHashMap>) LatestListingsResponse.getBody().get("data");
+        ArrayList<LatestListings> latestListings= new ArrayList<>();
         try {
             for (LinkedHashMap data : LatestListingsData) {
                 LatestListings listing = new LatestListings();
@@ -74,8 +75,9 @@ public class LatestListingService {
                 } else {
                     listing.setQuotesUSD(quotesService.getQuotesObject(quotesData, existingListing.get().getQuotesUSD()));
                 }
-                repository.save(listing);
+                latestListings.add(listing);
             }
+            repository.saveAll(latestListings);
         } catch (Exception e) {
             throw new ListingsNotFetched();
         }
