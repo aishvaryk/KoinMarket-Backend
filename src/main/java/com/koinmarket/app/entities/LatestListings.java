@@ -47,11 +47,11 @@ public class LatestListings {
     @Column(nullable = true)
     private Double totalSupply;
 
-    @OneToOne(mappedBy = "latestListings" , cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "latestListings" , cascade = CascadeType.ALL)
     @JsonManagedReference //helps with serialising object without infinite recursion
     private LatestQuotesUSD quotesUSD;
 
-    @OneToOne(mappedBy = "latestListings" , cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "latestListings" , cascade = CascadeType.ALL)
     @JsonManagedReference //helps with serialising object without infinite recursion
     private Metadata metadata;
 

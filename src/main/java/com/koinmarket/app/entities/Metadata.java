@@ -17,6 +17,10 @@ public class Metadata {
     @Column(name = "latest_listing_id")
     private Integer id;
 
+    private String symbol;
+
+    private String name;
+
     private String category;
 
     @Column(length = 1024, nullable = true)
