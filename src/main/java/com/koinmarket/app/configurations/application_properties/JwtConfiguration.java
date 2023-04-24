@@ -1,4 +1,4 @@
-package com.koinmarket.app.configurations;
+package com.koinmarket.app.configurations.application_properties;
 
 
 import lombok.Getter;
@@ -7,8 +7,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 @Getter @Setter
-@ConfigurationProperties(prefix= "cors")
+@ConfigurationProperties(prefix= "jwt")
 @Component
-public class CorsURLConfiguration {
-    private String url;
+public class JwtConfiguration {
+    private long expiration;
 }

@@ -1,6 +1,6 @@
 package com.koinmarket.app.services;
 
-import com.koinmarket.app.configurations.AppAPIConfiguration;
+import com.koinmarket.app.configurations.application_properties.AppAPIConfiguration;
 import com.koinmarket.app.entities.LatestListings;
 import com.koinmarket.app.entities.Metadata;
 import com.koinmarket.app.exceptions.CMCResponseErrorHandler;

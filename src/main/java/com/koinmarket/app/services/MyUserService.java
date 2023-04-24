@@ -1,7 +1,7 @@
 package com.koinmarket.app.services;
 
-import com.koinmarket.app.configurations.AdminUserConfiguration;
-import com.koinmarket.app.configurations.JwtConfiguration;
+import com.koinmarket.app.configurations.application_properties.AdminUserConfiguration;
+import com.koinmarket.app.configurations.application_properties.JwtConfiguration;
 import com.koinmarket.app.entities.JwtToken;
 import com.koinmarket.app.entities.User;
 import com.koinmarket.app.enums.Role;
