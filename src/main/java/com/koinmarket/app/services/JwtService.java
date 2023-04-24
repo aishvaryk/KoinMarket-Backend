@@ -1,6 +1,6 @@
 package com.koinmarket.app.services;
 
-import com.koinmarket.app.configurations.JwtConfiguration;
+import com.koinmarket.app.configurations.application_properties.JwtConfiguration;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

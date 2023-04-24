@@ -1,6 +1,6 @@
 package com.koinmarket.app;
 
-import com.koinmarket.app.configurations.CorsURLConfiguration;
+import com.koinmarket.app.configurations.application_properties.CorsURLConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
