@@ -19,6 +19,8 @@ public class Metadata {
 
     private String symbol;
 
+    private String name;
+
     private String category;
 
     @Column(length = 1024, nullable = true)

@@ -51,6 +51,7 @@ public class MetadataService {
             Metadata metadata = new Metadata();
             metadata.setId(id);
             metadata.setSymbol((String) metadataData.get("symbol"));
+            metadata.setName((String) metadataData.get("name"));
             metadata.setCategory((String) metadataData.get("category"));
             metadata.setDescription((String) metadataData.get("description"));
             metadata.setLogoURL((String) metadataData.get("logo"));
