@@ -39,6 +39,8 @@ public class SecurityConfiguration {
             .csrf().disable()
             .authorizeHttpRequests()
             .requestMatchers("/login").permitAll()
+            .requestMatchers("/list").permitAll()
+            .requestMatchers("/metadata").permitAll()
             .requestMatchers("/register").permitAll()
             .anyRequest().authenticated()
             .and()
