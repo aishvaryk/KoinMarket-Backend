@@ -14,7 +14,7 @@
 	<name>app</name>
 	<description>Demo project for Spring Boot</description>
 	<properties>
-		<java.version>19</java.version>
+		<java.version>17</java.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -80,20 +80,8 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
 					<profiles>
-						<profile>
-							<id>dev</id>
-							<properties>
-								<build.profile.id>dev</build.profile.id>
-								<profileActive>dev</profileActive>
-							</properties>
-						</profile>
-						<profile>
-							<id>prod</id>
-							<properties>
-								<build.profile.id>prod</build.profile.id>
-								<profileActive>prod</profileActive>
-							</properties>
-						</profile>
+						<profile>prod</profile>
+						<profile>dev</profile>
 					</profiles>
 					<excludes>
 						<exclude>
