@@ -15,7 +15,7 @@ import java.util.HashSet;
 import java.util.List;
 
 @RestController
-@RequestMapping("/watchlist")
+@RequestMapping("/watchlists")
 public class WatchlistController {
 
     @Autowired
@@ -25,7 +25,7 @@ public class WatchlistController {
     private LatestListingController listingController;
 
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USER')")
-    @GetMapping("/{id}")
+    @GetMapping("/watchlist/{id}")
     public ResponseEntity<WatchlistDTO> getWatchlist(@PathVariable("id") Integer id) {
         Watchlist watchlistEntity =  watchlistService.getWatchlistById(id);
         WatchlistDTO watchlistDTO = convertWatchlistEntityToDTO(watchlistEntity);
@@ -52,7 +52,7 @@ public class WatchlistController {
     }
 
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USER')")
-    @PutMapping("/{id}/add")
+    @PutMapping("/watchlist/{id}/add")
     public ResponseEntity<WatchlistDTO> addItemToWatchList(@PathVariable("id") Integer id, @RequestParam Integer coinId) {
         Watchlist watchlistEntity = watchlistService.addItemToWatchList(id, coinId);
         WatchlistDTO watchlistDTO = convertWatchlistEntityToDTO(watchlistEntity);
@@ -60,7 +60,7 @@ public class WatchlistController {
     }
 
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USER')")
-    @PutMapping("/{id}/remove")
+    @PutMapping("/watchlist/{id}/remove")
     public ResponseEntity<WatchlistDTO> removeItemFromWatchList(@PathVariable("id") Integer id, @RequestParam Integer coinId) {
         Watchlist watchlistEntity =  watchlistService.removeItemFromWatchList(id, coinId);
         WatchlistDTO watchlistDTO = convertWatchlistEntityToDTO(watchlistEntity);
