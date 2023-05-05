@@ -21,7 +21,7 @@ public class Watchlist {
     @JsonBackReference
     private User user;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.ALL })
+    @ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.MERGE, CascadeType.REFRESH })
     @JoinTable(
         name = "watchlist_listing",
         joinColumns = { @JoinColumn(name = "watchlist_id") },
